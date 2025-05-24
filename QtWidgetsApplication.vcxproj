@@ -78,7 +78,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>D:\MVS\MVS\Development\Libraries\win64;C:\Program Files\Teledyne\Spinnaker\lib64\vs2015;D:\opencv490\opencv\build\x64\vc16\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world490.lib;Spinnakerd_v140.lib;SpinUpdate_v140.lib;SpinVideod_v140.lib;MvCameraControl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world490d.lib;Spinnakerd_v140.lib;SpinUpdate_v140.lib;SpinVideod_v140.lib;MvCameraControl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">

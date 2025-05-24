@@ -28,15 +28,20 @@ public:
     int nRet = MV_OK;
     void* handle = NULL;
     bool PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo);
+
+   
     
     MV_FRAME_OUT_INFO_EX	m_stImageInfo;  // 图像信息结构体变量
     MV_FRAME_OUT stImageInfo = {0};
+
 
 public slots:
     void GrabThreadProcess();
     void finish();
 signals:
     void img_redy(MV_FRAME_OUT stImageInfo, void* handle);
+
+    void img_to(QImage img, void* handle);
 
 
 };

@@ -44,10 +44,11 @@ void QtWidgetsApplication::on_pb_camera_clicked() {
 		Hacm_worker = new haikang(this);
 		Hacm_worker->moveToThread(cam_thread);
 		connect(cam_thread, &QThread::started, Hacm_worker, &haikang::GrabThreadProcess);
-		connect(Hacm_worker, &haikang::img_redy, this, &QtWidgetsApplication::do_hai_img_redy);
-		connect(cam_thread, &QThread::finished, Hacm_worker, &haikang::finish);
+		//connect(Hacm_worker, &haikang::img_redy, this, &QtWidgetsApplication::do_hai_img_redy); //弃用
+		m_hwndDisplay = (HWND)ui.imgView->winId();//弃用
+		connect(cam_thread, &QThread::finished, Hacm_worker, &haikang::finish); 
+		connect(Hacm_worker, &haikang::img_to, this, &QtWidgetsApplication::hai_img_redy);
 		cam_thread->start();
-		m_hwndDisplay = (HWND)ui.imgView->winId();
 		setSlideSpinboxCheckboxSync();
 	}
 	if (currentText == "flir camera")
@@ -63,25 +64,40 @@ void QtWidgetsApplication::on_pb_camera_clicked() {
 		setSlideSpinboxCheckboxSync();
 	}
 
-
-
 }
-//将相机传回来的图片进行显示
+
+// 将海康相机传回来的图片进行显示
+void QtWidgetsApplication::hai_img_redy(QImage image, void* handle)
+{
+	hikimage = image;    //往tct里面送的时候用
+	HK_handle = handle; //相机句柄
+	m_scene->clear();  // 清除旧图像
+	QPixmap pixmap = QPixmap::fromImage(image);
+	pixmapItem = m_scene->addPixmap(pixmap);
+
+	ui.imgView->fitInView(pixmapItem, Qt::KeepAspectRatio);
+	ui.imgView->setScene(m_scene);
+	ui.imgView->show();
+}
+
+//将海康相机传回来的图片进行显示  //SB处理办法 
 void QtWidgetsApplication::do_hai_img_redy(MV_FRAME_OUT stImageInfo, void *handle)
 {
-	HK_handle = handle;
-	MV_DISPLAY_FRAME_INFO stDisplayInfo = {0};
-	stDisplayInfo.hWnd = m_hwndDisplay;   //显示的句柄 这种显示方式相当于绑定句柄
-	stDisplayInfo.pData = stImageInfo.pBufAddr;
-	stDisplayInfo.nDataLen = stImageInfo.stFrameInfo.nFrameLen;
-	stDisplayInfo.nWidth = stImageInfo.stFrameInfo.nWidth;
-	stDisplayInfo.nHeight = stImageInfo.stFrameInfo.nHeight;
-	stDisplayInfo.enPixelType = stImageInfo.stFrameInfo.enPixelType;
-	MV_CC_DisplayOneFrame(handle, &stDisplayInfo);
-	MV_CC_FreeImageBuffer(handle, &stImageInfo);
+	//HK_handle = handle;
+	//MV_DISPLAY_FRAME_INFO stDisplayInfo = {0};
+	//stDisplayInfo.hWnd = m_hwndDisplay;   //显示的句柄 这种显示方式相当于绑定句柄
+	//stDisplayInfo.pData = stImageInfo.pBufAddr;
+	//stDisplayInfo.nDataLen = stImageInfo.stFrameInfo.nFrameLen;
+	//stDisplayInfo.nWidth = stImageInfo.stFrameInfo.nWidth;
+	//stDisplayInfo.nHeight = stImageInfo.stFrameInfo.nHeight;
+	//stDisplayInfo.enPixelType = stImageInfo.stFrameInfo.enPixelType;
+	//MV_CC_DisplayOneFrame(handle, &stDisplayInfo);
+	//MV_CC_FreeImageBuffer(handle, &stImageInfo);
 }
 
-//将相机传回来的图片进行显示
+
+  
+//将flir相机传回来的图片进行显示
 void QtWidgetsApplication::do_img_redy(ImagePtr pResultImage)
 {
 	const size_t width = pResultImage->GetWidth();
@@ -163,7 +179,7 @@ void QtWidgetsApplication::setSlideSpinboxCheckboxSync() {
 			resetGain();
 			});
 	}
-	if (currentText == "haikang camera") {
+	if (currentText =="haikang camera") {
 		// Exposure
 		connect(ui.sldExposure, &QSlider::valueChanged, ui.spinExposure, [this](int sliderValue) {
 			ui.spinExposure->setValue(static_cast<double>(sliderValue));
@@ -211,13 +227,11 @@ void QtWidgetsApplication::HK_resetExposure()
 
 void QtWidgetsApplication::HK_configureExposure(double exposure)
 {
-	MV_CC_SetExposureAutoMode(HK_handle, 0);
 	MV_CC_SetFloatValue(HK_handle, "ExposureTime", exposure);
 }
 
 void QtWidgetsApplication::HK_configureGain(double gain)
 {
-	MV_CC_SetGain(HK_handle, 0);
 	MV_CC_SetFloatValue(HK_handle, "Gain", gain);
 }
 
@@ -244,17 +258,27 @@ int QtWidgetsApplication::resetGain() {
 
 void QtWidgetsApplication::on_btnSingleImageSave_clicked() {
 
-	qDebug() << "Single image save clicked";
-	QString fileName = QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm-ss-zzz");
-	QString absPath = ui.edtSaveDir->text() + "/" + fileName + ".tif";
-	qDebug() << "Save path: " << absPath << "";
+	QString currentText = ui.CameraBox->currentText();
+	if (currentText == "flir camera") {
+		qDebug() << "Single image save clicked";
+		QString fileName = QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm-ss-zzz");
+		QString absPath = ui.edtSaveDir->text() + "/" + fileName + ".tif";
+		qDebug() << "Save path: " << absPath << "";
 
-	ImagePtr pImage = cam_worker->pCam->GetNextImage(1000);
-	if (pImage->IsIncomplete()) {
-		qDebug() << "Image incomplete in 1s: " << Image::GetImageStatusDescription(pImage->GetImageStatus()) << "...";
+		ImagePtr pImage = cam_worker->pCam->GetNextImage(1000);
+		if (pImage->IsIncomplete()) {
+			qDebug() << "Image incomplete in 1s: " << Image::GetImageStatusDescription(pImage->GetImageStatus()) << "...";
+		}
+		ImagePtr pConvertedImage = processor.Convert(pImage, PixelFormat_RGB8);
+		pConvertedImage->Save(absPath.toStdString().c_str());
 	}
-	ImagePtr pConvertedImage = processor.Convert(pImage, PixelFormat_RGB8);
-	pConvertedImage->Save(absPath.toStdString().c_str());
+	if (currentText == "haikang camera") {
+	
+	
+	
+	
+	}
+	
 }
 
 void QtWidgetsApplication::on_btnSaveDir_clicked() {
@@ -307,13 +331,25 @@ QImage convertToQImage(const ImagePtr& pImage)
 void QtWidgetsApplication::on_pb_model_clicked()
 {
 	/*QString fileName = QFileDialog::getOpenFileName(this, "选择图片", "D:/TCT_down/dataset/test/images", "Images (*.png *.jpg)");
-	QImage image(fileName);*/  
-	ImagePtr pImage = cam_worker->pCam->GetNextImage(1000);
-	if (pImage->IsIncomplete()) {
-		qDebug() << "Image incomplete in 1s: " << Image::GetImageStatusDescription(pImage->GetImageStatus()) << "...";
+	QImage image(fileName);*/ 
+	QString currentText = ui.CameraBox->currentText();
+	if (currentText == "flir camera") {
+		ImagePtr pImage = cam_worker->pCam->GetNextImage(1000);
+		if (pImage->IsIncomplete()) {
+			qDebug() << "Image incomplete in 1s: " << Image::GetImageStatusDescription(pImage->GetImageStatus()) << "...";
+		}
+		ImagePtr pConvertedImage = processor.Convert(pImage, PixelFormat_RGB8);
+		QImage image = convertToQImage(pConvertedImage);
+		emit emit_img(image);
 	}
-	ImagePtr pConvertedImage = processor.Convert(pImage, PixelFormat_RGB8);
-	QImage image = convertToQImage(pConvertedImage);
-	emit emit_img(image);
+	if (currentText == "haikang camera") {
+		//MV_FRAME_OUT_INFO_EX	m_stImageInfo;  // 图像信息结构体变量
+		//MV_FRAME_OUT stImageInfo = { 0 };
+		//MV_CC_GetImageBuffer(HK_handle, &stImageInfo, 1000);
+		//memcpy(&m_stImageInfo, &(stImageInfo.stFrameInfo), sizeof(MV_FRAME_OUT_INFO_EX));   //复制一份出来，用于保存图片
+		//QImage image(stImageInfo.pBufAddr, stImageInfo.stFrameInfo.nWidth, stImageInfo.stFrameInfo.nHeight, QImage::Format_Indexed8);
+		emit emit_img(hikimage);
+	
+	}
 	
 }

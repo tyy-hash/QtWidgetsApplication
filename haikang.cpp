@@ -2,6 +2,8 @@
 #pragma execution_character_set("UTF-8")
 #include <QtWidgets/QMainWindow>
 #include "haikang.h"
+#include <Image.h>
+
 
 
 haikang::haikang(QWidget* parent)
@@ -58,12 +60,11 @@ haikang::haikang(QWidget* parent)
     // ch:开始取流 | en:Start grab image
     nRet = MV_CC_StartGrabbing(handle);
 
-
 }
 
 haikang::~haikang()
 {
-
+    finish();
 
 }
 
@@ -84,15 +85,56 @@ bool haikang::PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo)
     return true;
 }
 
+
+
 void haikang::GrabThreadProcess() {
-    printf("111");
     MV_CC_SetEnumValue(handle, "TriggerMode", MV_TRIGGER_MODE_OFF);
     while (1) {
         MV_CC_GetImageBuffer(handle, &stImageInfo, 1000);
-        memcpy(&m_stImageInfo, &(stImageInfo.stFrameInfo), sizeof(MV_FRAME_OUT_INFO_EX));   //复制一份出来，用于保存图片
-        emit img_redy(stImageInfo, handle);
+        // 检查像素格式是否为Bayer RG8
+        if (stImageInfo.stFrameInfo.enPixelType == PixelType_Gvsp_BayerRG8) {
+            // 使用OpenCV处理Bayer数据
+            cv::Mat bayerMat(
+                stImageInfo.stFrameInfo.nHeight,
+                stImageInfo.stFrameInfo.nWidth,
+                CV_8UC1,
+                stImageInfo.pBufAddr
+            );
+            cv::Mat rgbMat;
+            cv::cvtColor(bayerMat, rgbMat, cv::COLOR_BayerRG2RGB);
+            // 转换为QImage（RGB888）
+            QImage tempImage(
+                rgbMat.data,
+                rgbMat.cols,
+                rgbMat.rows,
+                rgbMat.step,
+                QImage::Format_RGB888
+            );
+            // 深拷贝数据确保安全
+            QImage safeImage = tempImage.copy();
+            // 发送信号到主线程显示
+            emit img_to(safeImage, handle);
+        }
+        MV_CC_FreeImageBuffer(handle, &stImageInfo);
     }
 }
+
+//memcpy(&m_stImageInfo, &(stImageInfo.stFrameInfo), sizeof(MV_FRAME_OUT_INFO_EX));   //复制一份出来，用于保存图片
+            /*QImage image(stImageInfo.pBufAddr,
+                stImageInfo.stFrameInfo.nWidth,
+                stImageInfo.stFrameInfo.nHeight,
+                QImage::Format_Indexed8);
+
+            int bytesPerLine = stImageInfo.stFrameInfo.enPixelType;
+            qDebug() << "is: " << stImageInfo.stFrameInfo.enPixelType << "";
+            printf("bytesPerLine");
+            emit img_to(image, handle);
+            MV_CC_FreeImageBuffer(handle, &stImageInfo);*/
+
+            //MV_FRAME_OUT stOutFrame = stImageInfo;
+            //emit img_redy(stImageInfo, handle); 
+
+
 void haikang::finish() {
 
     nRet = MV_CC_StopGrabbing(handle);
@@ -119,3 +161,4 @@ void haikang::finish() {
     printf("Destroy Handle success! nRet [0x%x]\n", nRet);
 
 }
+
