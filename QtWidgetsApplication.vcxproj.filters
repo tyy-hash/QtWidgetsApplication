@@ -49,6 +49,9 @@
     <ClCompile Include="haikang.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Mycontrol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="M_camera.h">
@@ -58,6 +61,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="haikang.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Mycontrol.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

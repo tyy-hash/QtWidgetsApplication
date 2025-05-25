@@ -65,16 +65,16 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\MVS\MVS\Development\Includes;C:\Program Files\Teledyne\Spinnaker\include;D:\opencv490\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\MVS\MVS\Development\Include;C:\Program Files\Teledyne\Spinnaker\include;D:\opencv490\opencv\build\include;D:\XT\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>D:\MVS\MVS\Development\Libraries\win64;C:\Program Files\Teledyne\Spinnaker\lib64\vs2015;D:\opencv490\opencv\build\x64\vc16\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world490.lib;Spinnaker_v140.lib;SpinUpdate_v140.lib;SpinVideo_v140.lib;MvCameraControl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\MVS\MVS\Development\Libraries\win64;C:\Program Files\Teledyne\Spinnaker\lib64\vs2015;D:\opencv490\opencv\build\x64\vc16\lib;D:\XT\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world490.lib;Spinnaker_v140.lib;SpinUpdate_v140.lib;SpinVideo_v140.lib;MvCameraControl.lib;MotionControlExtendDll.lib;voice_motor_dll.lib;GKZTMotion.lib;MotionControlDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\MVS\MVS\Development\Includes;D:\opencv490\opencv\build\include;C:\Program Files\Teledyne\Spinnaker\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\MVS\MVS\Development\Includes;D:\opencv490\opencv\build\include;C:\Program Files\Teledyne\Spinnaker\include;D:\XT\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>D:\MVS\MVS\Development\Libraries\win64;C:\Program Files\Teledyne\Spinnaker\lib64\vs2015;D:\opencv490\opencv\build\x64\vc16\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -111,6 +111,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="haikang.cpp" />
+    <ClCompile Include="Mycontrol.cpp" />
     <ClCompile Include="TCT.cpp" />
     <QtRcc Include="QtWidgetsApplication.qrc" />
     <QtUic Include="QtWidgetsApplication.ui" />
@@ -127,6 +128,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="haikang.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="Mycontrol.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

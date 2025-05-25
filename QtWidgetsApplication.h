@@ -15,7 +15,7 @@
 #include <QDateTime>
 #include <QFileDialog>
 #include "haikang.h"
-
+//#include "Mycontrol.h"
 
 
 class QtWidgetsApplication : public QMainWindow
@@ -26,9 +26,6 @@ public:
     QtWidgetsApplication(QWidget *parent = nullptr);
 
     ~QtWidgetsApplication();
-
-    
-
 
     int resetExposure();                       // 自动曝光
 
@@ -59,6 +56,7 @@ public:
     QImage in_image;                      //传回来的图片
 
     QImage hikimage;
+    
 public slots:
 
     void do_img_redy(ImagePtr pResultImage);  //显示检测后的照片
@@ -66,9 +64,10 @@ public slots:
     void on_btnSaveDir_clicked();             //选择存储路径
     void input_img(QImage image);             //接收经过网络后的图片
     void on_pb_model_clicked();               //自动检测按钮
+    
     void do_hai_img_redy(MV_FRAME_OUT stImageInfo, void* handle);
     void on_pb_camera_clicked();              //选择相机
-
+    void on_btnUp_clicked();                  //Z向上
     void hai_img_redy(QImage image, void* handle);
 signals:
     void emit_img(QImage image);              //将需要传入网络的图片传出去
@@ -87,4 +86,5 @@ private:
     QThread* cam_thread;               // 相机的线程
     M_camera* cam_worker;              // filr相机
     haikang* Hacm_worker;              // haikang相机
+   /* Mycontrol* mycontrol;*/
 };

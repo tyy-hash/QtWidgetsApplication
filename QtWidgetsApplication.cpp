@@ -26,7 +26,7 @@ QtWidgetsApplication::QtWidgetsApplication(QWidget *parent)
 	connect(this, &QtWidgetsApplication::emit_img, my_TCT, &TCT::main_module);
 	connect(my_TCT, &TCT::em_img, this, &QtWidgetsApplication::input_img);
 	m_infQthread->start();
-	 
+	
 }
 
 QtWidgetsApplication::~QtWidgetsApplication()
@@ -343,13 +343,16 @@ void QtWidgetsApplication::on_pb_model_clicked()
 		emit emit_img(image);
 	}
 	if (currentText == "haikang camera") {
-		//MV_FRAME_OUT_INFO_EX	m_stImageInfo;  // 图像信息结构体变量
-		//MV_FRAME_OUT stImageInfo = { 0 };
-		//MV_CC_GetImageBuffer(HK_handle, &stImageInfo, 1000);
-		//memcpy(&m_stImageInfo, &(stImageInfo.stFrameInfo), sizeof(MV_FRAME_OUT_INFO_EX));   //复制一份出来，用于保存图片
-		//QImage image(stImageInfo.pBufAddr, stImageInfo.stFrameInfo.nWidth, stImageInfo.stFrameInfo.nHeight, QImage::Format_Indexed8);
+		
 		emit emit_img(hikimage);
-	
 	}
 	
+}
+
+
+void QtWidgetsApplication::on_btnUp_clicked() {
+	
+	//double zDis = ui.spinZDis->value();
+	//qDebug() << "Up clicked, Move up: " << zDis << "um";
+	//mycontrol->moveBy(3, zDis * -1e-3);
 }
